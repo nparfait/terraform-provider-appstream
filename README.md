@@ -25,12 +25,10 @@ https://github.com/terraform-providers/terraform-provider-aws
 
 ## Authors/Contributors/Forks
 This fork is by:
-[Arnvid Karstad](https://github.com/arnvid)
+[Nicolas Parfait](https://github.com/nparfait)
 
 Original code from:
 https://github.com/ops-guru/terraform-provider-appstream
-[Viktor Berlov](https://github.com/vktr-brlv)
+[Arnvid Karstad](https://github.com/arnvid)
 
-Other forks ref'd:
-https://github.com/bluesentry/terraform-provider-appstream
-[Chris Mackubin](https://github.com/chris-mackubin)
+

@@ -19,6 +19,40 @@ func resourceAppstreamStack() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"access_endpoints": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"endpoint_type": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+                        "vpce_id": {
+                            Type:     schema.TypeString,
+                            Required: true,
+                        },
+					},
+				},
+			},
+
+			"application_settings": {
+                Type:         schema.TypeList,
+                Optional:     true,
+                Elem:         &schema.Resource{
+                    Schema: map[string]*schema.Schema{
+                        "enabled": {
+                            Type:       schema.TypeBool,
+                            Required:   true,
+                        },
+                        "settings_group": {
+                            Type:       schema.TypeString,
+                            Optional:   true,
+                        },
+                    },
+                },
+            },
+
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -97,6 +131,25 @@ func resourceAppstreamStackCreate(d *schema.ResourceData, meta interface{}) erro
 	svc := meta.(*AWSClient).appstreamconn
 
 	CreateStackInputOpts := &appstream.CreateStackInput{}
+
+	if v, ok := d.GetOk("access_endpoints"); ok {
+		accessEndpointConfigs := v.(*schema.Set).List()
+		CreateStackInputOpts.AccessEndpoints = expandAccessEndpointConfigs(accessEndpointConfigs)
+	}
+
+    ApplicationSettings := &appstream.ApplicationSettings{}
+
+	if a, ok := d.GetOk("application_settings"); ok {
+		ApplicationSettingsAttributes := a.([]interface{})
+		attr := ApplicationSettingsAttributes[0].(map[string]interface{})
+		if v, ok := attr["enabled"]; ok {
+			ApplicationSettings.Enabled = aws.Bool(v.(bool))
+		}
+		if v, ok := attr["settings_group"]; ok {
+			ApplicationSettings.SettingsGroup = aws.String(v.(string))
+		}
+		CreateStackInputOpts.ApplicationSettings = ApplicationSettings
+	}
 
 	if v, ok := d.GetOk("name"); ok {
 		CreateStackInputOpts.Name = aws.String(v.(string))
@@ -233,6 +286,30 @@ func resourceAppstreamStackRead(d *schema.ResourceData, meta interface{}) error 
 				}
 				d.Set("tags", tags_attr)
 			}
+
+			aeAttr := map[string]interface{}{}
+			aeRes := make([]map[string]interface{}, 0)
+
+			ae := v.AccessEndpoints
+			if len(ae) > 0 && len(ae) < 5 {
+				aeAttr["endpoint_type"] = aws.StringValue(ae[0].EndpointType)
+				aeAttr["vpce_id"] = aws.StringValue(ae[0].VpceId)
+				aeRes = append(aeRes, aeAttr)
+			}
+
+			if len(aeRes) > 0 {
+				if err := d.Set("access_endpoints", aeRes); err != nil {
+					log.Printf("[ERROR] Error setting access endpoints: %s", err)
+				}
+			}
+
+			if v.ApplicationSettings != nil {
+				app_settings_attr := map[string]interface{}{}
+				app_settings_attr["enabled"] = aws.BoolValue(v.ApplicationSettings.Enabled)
+				app_settings_attr["settings_group"] = aws.StringValue(v.ApplicationSettings.SettingsGroup)
+				d.Set("application_settings", app_settings_attr)
+			}
+
 			return nil
 		}
 	}
@@ -308,6 +385,22 @@ func resourceAppstreamStackDelete(d *schema.ResourceData, meta interface{}) erro
 	log.Printf("[DEBUG] %s", resp)
 	return nil
 
+}
+
+func expandAccessEndpointConfigs(accessEndpointConfigs []interface{}) []*appstream.AccessEndpoint {
+	accessEndpointConfig := []*appstream.AccessEndpoint{}
+
+	for _, raw := range accessEndpointConfigs {
+		configAttributes := raw.(map[string]interface{})
+		configEndpointType := configAttributes["endpoint_type"].(string)
+		configVpceId := configAttributes["vpce_id"].(string)
+		config := &appstream.AccessEndpoint{
+			EndpointType: aws.String(configEndpointType),
+			VpceId: aws.String(configVpceId),
+		}
+		accessEndpointConfig = append(accessEndpointConfig, config)
+	}
+	return accessEndpointConfig
 }
 
 func expandStorageConnectorConfigs(storageConnectorConfigs []interface{}) []*appstream.StorageConnector {

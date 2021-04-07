@@ -1,5 +1,5 @@
 provider "appstream" {
-  version = "v1.0.8"
+  version = "1.0.9"
   assume_role {
     role_arn = var.assume_role_arn
   }
@@ -13,7 +13,7 @@ resource "appstream_image_builder" "test-image-builder" {
   description                    = "test image builder"
   display_name                   = "test-image-builder"
   enable_default_internet_access = true
-  image_name                     = "Base-Image-Builder-05-02-2018"
+  image_arn                     = "Base-Image-Builder-05-02-2018"
   instance_type                  = "stream.standard.large"
   vpc_config {
     security_group_ids = "sg-b5af81d3"
@@ -32,7 +32,7 @@ resource "appstream_stack" "test-stack" {
   storage_connectors {
     connector_type = "HOMEFOLDERS"
   }
-  tags {
+  tags = {
     Env  = "lab"
     Role = "appstream-stack"
   }
@@ -49,14 +49,15 @@ resource "appstream_fleet" "test-fleet" {
   display_name                   = "test-fleet"
   enable_default_internet_access = true
   fleet_type                     = "ON_DEMAND"
-  image_name                     = "arn:aws:appstream:eu-west-1:1231241241:image/Base-Image-Builder-05-02-2018"
+  image_arn                     = "arn:aws:appstream:eu-west-1:1231241241:image/Base-Image-Builder-05-02-2018"
   instance_type                  = "stream.standard.large"
   max_user_duration              = 600
+  iam_role_arn = ""
   vpc_config {
     security_group_ids = "sg-b5af81d3"
     subnet_ids         = "subnet-7a5f4b51,subnet-7a5f1231"
   }
-  tags {
+  tags = {
     Env  = "lab"
     Role = "appstream-fleet"
   }

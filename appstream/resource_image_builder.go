@@ -25,6 +25,24 @@ func resourceAppstreamImageBuilder() *schema.Resource {
                 Type:         schema.TypeString,
                 Required:     true,
             },
+
+			"access_endpoints": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"endpoint_type": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+                        "vpce_id": {
+                            Type:     schema.TypeString,
+                            Required: true,
+                        },
+					},
+				},
+			},
+
             "appstream_agent_version": {
                 Type:         schema.TypeString,
                 Optional:     true,
@@ -63,7 +81,13 @@ func resourceAppstreamImageBuilder() *schema.Resource {
 
             "image_arn": {
                 Type:         schema.TypeString,
-                Required:     true,
+                Optional:     true,
+                ForceNew:	  true,
+            },
+
+            "image_name": {
+                Type:         schema.TypeString,
+                Optional:     true,
                 ForceNew:	  true,
             },
 
@@ -107,6 +131,11 @@ func resourceAppstreamImageBuilderCreate(d *schema.ResourceData, meta interface{
         CreateImageBuilderInputOpts.Name = aws.String(v.(string))
     }
 
+	if v, ok := d.GetOk("access_endpoints"); ok {
+		accessEndpointConfigs := v.(*schema.Set).List()
+		CreateImageBuilderInputOpts.AccessEndpoints = expandAccessEndpointConfigs(accessEndpointConfigs)
+	}
+
     if v, ok := d.GetOk("appstream_agent_version"); ok {
         CreateImageBuilderInputOpts.AppstreamAgentVersion = aws.String(v.(string))
     }
@@ -139,6 +168,10 @@ func resourceAppstreamImageBuilderCreate(d *schema.ResourceData, meta interface{
 
     if v, ok := d.GetOk("image_arn"); ok {
         CreateImageBuilderInputOpts.ImageArn = aws.String(v.(string))
+    }
+
+    if v, ok := d.GetOk("image_name"); ok {
+        CreateImageBuilderInputOpts.ImageName = aws.String(v.(string))
     }
 
     if v, ok := d.GetOk("instance_type"); ok {
@@ -228,6 +261,7 @@ func resourceAppstreamImageBuilderRead(d *schema.ResourceData, meta interface{})
             d.Set("enable_default_internet_access", v.EnableDefaultInternetAccess)
             d.Set("instance_type", v.InstanceType)
             d.Set("image_arn", d.Get("image_arn"))
+            d.Set("image_name", d.Get("image_name"))
             d.Set("state", v.State)
             if v.VpcConfig != nil {
                 vpc_attr := map[string]interface{}{}
@@ -237,6 +271,23 @@ func resourceAppstreamImageBuilderRead(d *schema.ResourceData, meta interface{})
                 vpc_attr["subnet_ids"] = aws.String(strings.Join(vpc_config_sub, ","))
                 d.Set("vpc_config", vpc_attr)
             }
+
+			aeAttr := map[string]interface{}{}
+			aeRes := make([]map[string]interface{}, 0)
+
+			ae := v.AccessEndpoints
+			if len(ae) > 0 && len(ae) < 5 {
+				aeAttr["endpoint_type"] = aws.StringValue(ae[0].EndpointType)
+				aeAttr["vpce_id"] = aws.StringValue(ae[0].VpceId)
+				aeRes = append(aeRes, aeAttr)
+			}
+
+			if len(aeRes) > 0 {
+				if err := d.Set("access_endpoints", aeRes); err != nil {
+					log.Printf("[ERROR] Error setting access endpoints: %s", err)
+				}
+			}
+
             return nil
         }
     }

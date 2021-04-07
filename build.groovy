@@ -19,7 +19,7 @@ node ("master") {
                 "GOPATH=${env.HOME}/go",
                 "GOBIN=${env.HOME}/go/bin",
         ]){
-            sh "go build -o ${env.HOME}/.terraform.d/plugins/terraform-provider-appstream_v0.0.1"
+            sh "go build -o ${env.HOME}/.terraform.d/plugins/terraform-provider-appstream_1.0.9"
         }
     }
 }

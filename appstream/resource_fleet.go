@@ -81,10 +81,10 @@ func resourceAppstreamFleet() *schema.Resource {
 				Required:     true,
 				ForceNew:	  true,
 			},
-			
+
 			"iam_role_arn": {
                 Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ForceNew:	  true,
             },
 
@@ -103,15 +103,21 @@ func resourceAppstreamFleet() *schema.Resource {
                 Required:   true,
             },
 
-	    "stack_name": {
-                Type:       schema.TypeString,
-                Optional:   true,
+            "stack_name": {
+                    Type:       schema.TypeString,
+                    Optional:   true,
+                },
+
+            "state": {
+                Type:	schema.TypeString,
+                Optional:	true,
             },
 
-	    "state": {
-		    Type:	schema.TypeString,
-		    Optional:	true,
-	    },
+            "stream_view": {
+                Type:         schema.TypeString,
+                Optional:     true,
+                ForceNew:	  true,
+            },
 
             "vpc_config": {
                 Type:         schema.TypeList,
@@ -129,10 +135,10 @@ func resourceAppstreamFleet() *schema.Resource {
                     },
                 },
             },
-	    "tags": {
-		    Type:	schema.TypeMap,
-		    Optional:	true,
-	    },
+            "tags": {
+                Type:	schema.TypeMap,
+                Optional:	true,
+            },
         },
     }
 }
@@ -208,6 +214,10 @@ func resourceAppstreamFleetCreate(d *schema.ResourceData, meta interface{}) erro
 	if v, ok := d.GetOk("max_user_duration"); ok {
 		CreateFleetInputOpts.MaxUserDurationInSeconds = aws.Int64(int64(v.(int)))
 	}
+
+    if v, ok := d.GetOk("stream_view"); ok {
+        CreateFleetInputOpts.StreamView = aws.String(v.(string))
+    }
 
 	VpcConfigConfig := & appstream.VpcConfig{}
 
@@ -363,6 +373,7 @@ func resourceAppstreamFleetRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set("iam_role_arn", v.IamRoleArn)
 			d.Set("instance_type", v.InstanceType)
 			d.Set("max_user_duration", v.MaxUserDurationInSeconds)
+            d.Set("stream_view", v.StreamView)
 
 			if v.VpcConfig != nil {
 				vpc_attr := map[string]interface{}{}
@@ -441,7 +452,7 @@ func resourceAppstreamFleetUpdate(d *schema.ResourceData, meta interface{}) erro
         image_arn :=d.Get("image_arn").(string)
         UpdateFleetInputOpts.ImageArn = aws.String(image_arn)
 	}
-	
+
 	if d.HasChange("iam_role_arn") {
         d.SetPartial("iam_role_arn")
         log.Printf("[DEBUG] Modify Fleet")
@@ -462,6 +473,13 @@ func resourceAppstreamFleetUpdate(d *schema.ResourceData, meta interface{}) erro
         max_user_duration :=d.Get("max_user_duration").(int)
         UpdateFleetInputOpts.MaxUserDurationInSeconds = aws.Int64(int64(max_user_duration))
     }
+
+	if d.HasChange("stream_view") {
+        d.SetPartial("stream_view")
+        log.Printf("[DEBUG] Modify Fleet")
+        stream_view :=d.Get("stream_view").(string)
+        UpdateFleetInputOpts.StreamView = aws.String(stream_view)
+	}
 
     resp, err := svc.UpdateFleet(UpdateFleetInputOpts)
 
