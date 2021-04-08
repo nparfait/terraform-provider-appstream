@@ -1,9 +1,9 @@
 provider "appstream" {
-  version = "1.0.9"
-  assume_role {
-    role_arn = var.assume_role_arn
-  }
-  region = var.region_primary
+  version = "1.0.10"
+//  assume_role {
+//    role_arn = var.assume_role_arn
+//  }
+//  region = var.region_primary
 }
 
 
@@ -62,4 +62,7 @@ resource "appstream_fleet" "test-fleet" {
     Role = "appstream-fleet"
   }
   state = "RUNNING"
+}
+
+resource "appstream_usage_report_subscription" "usage_report" {
 }

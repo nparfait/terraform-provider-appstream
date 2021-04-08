@@ -64,6 +64,7 @@ func Provider() terraform.ResourceProvider {
 		    "appstream_stack":  		resourceAppstreamStack(),
 		    "appstream_image_builder":  resourceAppstreamImageBuilder(),
 		    "appstream_fleet":			resourceAppstreamFleet(),
+		    "appstream_usage_report_subscription":  resourceAppstreamUsageReportSubscription(),
 		},
 	}
 	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
