@@ -53,7 +53,8 @@ resource "appstream_fleet" "test-fleet" {
   display_name                   = "test-fleet"
   enable_default_internet_access = true
   fleet_type                     = "ON_DEMAND"
-  image_arn                     = "arn:aws:appstream:eu-west-1:1231241241:image/Base-Image-Builder-05-02-2018"
+  idle_disconnect_timeout        = 300
+  image_arn                      = "arn:aws:appstream:eu-west-1:1231241241:image/Base-Image-Builder-05-02-2018"
   instance_type                  = "stream.standard.large"
   max_user_duration              = 600
   iam_role_arn = ""

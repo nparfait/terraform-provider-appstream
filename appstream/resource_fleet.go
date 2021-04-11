@@ -75,7 +75,12 @@ func resourceAppstreamFleet() *schema.Resource {
                 Type:         schema.TypeString,
                 Optional:     true,
             },
-			
+
+			"idle_disconnect_timeout": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+			},
+
 			"image_arn": {
                 Type:         schema.TypeString,
 				Required:     true,
@@ -196,6 +201,10 @@ func resourceAppstreamFleetCreate(d *schema.ResourceData, meta interface{}) erro
 
 	if v, ok := d.GetOk("fleet_type"); ok {
 		CreateFleetInputOpts.FleetType = aws.String(v.(string))
+	}
+
+	if v, ok := d.GetOk("idle_disconnect_timeout"); ok {
+		CreateFleetInputOpts.IdleDisconnectTimeoutInSeconds = aws.Int64(int64(v.(int)))
 	}
 
 	if v, ok := d.GetOk("image_arn"); ok {
@@ -369,6 +378,7 @@ func resourceAppstreamFleetRead(d *schema.ResourceData, meta interface{}) error 
 			d.Set("disconnect_timeout", v.DisconnectTimeoutInSeconds)
 			d.Set("enable_default_internet_access", v.EnableDefaultInternetAccess)
 			d.Set("fleet_type", v.FleetType)
+			d.Set("idle_disconnect_timeout", v.IdleDisconnectTimeoutInSeconds)
 			d.Set("image_arn", v.ImageArn)
 			d.Set("iam_role_arn", v.IamRoleArn)
 			d.Set("instance_type", v.InstanceType)
@@ -445,6 +455,13 @@ func resourceAppstreamFleetUpdate(d *schema.ResourceData, meta interface{}) erro
         display_name :=d.Get("display_name").(string)
         UpdateFleetInputOpts.DisplayName = aws.String(display_name)
     }
+
+	if d.HasChange("idle_disconnect_timeout") {
+		d.SetPartial("idle_disconnect_timeout")
+		log.Printf("[DEBUG] Modify Fleet")
+		idle_disconnect_timeout := d.Get("idle_disconnect_timeout").(int)
+		UpdateFleetInputOpts.IdleDisconnectTimeoutInSeconds = aws.Int64(int64(idle_disconnect_timeout))
+	}
 
 	if d.HasChange("image_arn") {
         d.SetPartial("image_arn")
