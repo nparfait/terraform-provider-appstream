@@ -359,6 +359,23 @@ func resourceAppstreamStackUpdate(d *schema.ResourceData, meta interface{}) erro
 		UpdateStackInputOpts.RedirectURL = aws.String(redirecturl)
 	}
 
+	ApplicationSettings := &appstream.ApplicationSettings{}
+	if d.HasChange("application_settings") {
+		d.SetPartial("application_settings")
+		log.Printf("[DEBUG] Modify appstream stack")
+		if a, ok := d.GetOk("application_settings"); ok {
+			ApplicationSettingsAttributes := a.([]interface{})
+			attr := ApplicationSettingsAttributes[0].(map[string]interface{})
+			if v, ok := attr["enabled"]; ok {
+				ApplicationSettings.Enabled = aws.Bool(v.(bool))
+			}
+			if v, ok := attr["settings_group"]; ok {
+				ApplicationSettings.SettingsGroup = aws.String(v.(string))
+			}
+			UpdateStackInputOpts.ApplicationSettings = ApplicationSettings
+		}
+	}
+
 	resp, err := svc.UpdateStack(UpdateStackInputOpts)
 
 	if err != nil {

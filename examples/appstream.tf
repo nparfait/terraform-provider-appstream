@@ -32,6 +32,10 @@ resource "appstream_stack" "test-stack" {
   storage_connectors {
     connector_type = "HOMEFOLDERS"
   }
+  application_settings {
+    enabled = true
+    settings_group = "test-settings-group"
+  }
   tags = {
     Env  = "lab"
     Role = "appstream-stack"
