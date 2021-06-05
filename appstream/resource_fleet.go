@@ -84,7 +84,6 @@ func resourceAppstreamFleet() *schema.Resource {
 			"image_arn": {
                 Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:	  true,
 			},
 
 			"iam_role_arn": {
