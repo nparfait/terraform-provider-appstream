@@ -1,3 +1,36 @@
+## 1.0.14 (Jul 9, 2021)
+BUGFIXES:
+* appstream/resource_fleet.go - image update doesn't force new fleet
+
+## 1.0.13 (May 26, 2021)
+ENHANCEMENTS:
+* Upgrade go version to 1.16
+
+## 1.0.12 (Apr 11, 2021)
+FEATURES:
+* appstream/resource_fleet.go - add idle_disconnect_timeout
+
+## 1.0.11 (APr 11, 2021)
+BUGFIXES:
+* appstream/resource_stack.go - trigger change based on application_settings
+
+## 1.0.10 (Apr 8, 2021)
+FEATURES:
+* appstream/resource_usage_report_subscription.go - add usage report
+
+## 1.0.9 (Apr 7, 2021)
+FEATURES:
+* appstream/resource_fleet.go - add stream_view, 
+* appstream/resource_image_builder.go - add access_endpoints
+* appstream/resource_stack.go - add access_endpoints, application_settings
+
+ENHANCEMENTS:
+* Upgraded modules
+* Updated examples
+* Upgrade build - add automated git build 
+
+BUGFIXES:
+* appstream/resource_fleet.go - change iam_role_arn to optional
 ## 1.0.8 (June 15, 2020)
 
 FEATURES:
